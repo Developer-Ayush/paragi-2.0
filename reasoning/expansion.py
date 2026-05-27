@@ -8,6 +8,10 @@ import config
 
 def create_expansion_node(query_label: str, graph: ParagiGraph) -> Node:
     """Creates a Node with is_expansion_node=True at the location of a knowledge gap."""
+    existing = graph.store.get_node_by_label(query_label)
+    if existing and existing.is_expansion_node:
+        return existing  # already queued
+
     node = Node(
         label=query_label,
         id=str(uuid.uuid4()),

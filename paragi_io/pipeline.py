@@ -90,7 +90,10 @@ def process_query(
         node_ids = set()
         for p in paths:
             node_ids.update(p.nodes)
-        node_labels = {nid: graph.store.get_node(nid).label for nid in node_ids}
+        node_labels = {
+            nid: (n.label if (n := graph.store.get_node(nid)) else "unknown")
+            for nid in node_ids
+        }
 
         # Re-score to ensure confidence is populated correctly for the best path
         # since it might have been zero in find_paths if not careful
