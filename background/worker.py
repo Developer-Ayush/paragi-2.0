@@ -1,3 +1,4 @@
+import asyncio
 import threading
 import time
 import logging
@@ -36,7 +37,7 @@ class BackgroundWorker:
         3. Save bloom filter to disk
         """
         # 1. Resolve expansion nodes
-        # (This is currently a placeholder in expansion.py)
+        asyncio.run(resolve_expansion_nodes(self.graph, self.fetcher, self.encoder))
 
         # 2. Save bloom
         bloom_path = "./data/bloom_filter.bin"

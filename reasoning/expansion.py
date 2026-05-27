@@ -17,6 +17,15 @@ def create_expansion_node(query_label: str, graph: ParagiGraph) -> Node:
     )
     graph.store.save_node(node)
     graph.bloom.add(query_label)
+
+    # Add to queue
+    import json
+    with graph.store.lock:
+        data = graph.store._get("expansion_queue")
+        queue = json.loads(data) if data else []
+        queue.append(node.id)
+        graph.store.db["expansion_queue"] = json.dumps(queue)
+
     return node
 
 class ExternalFetcher:
@@ -63,7 +72,41 @@ async def resolve_expansion_nodes(graph: ParagiGraph, fetcher: ExternalFetcher, 
       3. Add edges to graph
       4. Delete expansion node
     """
-    # This needs to find nodes with is_expansion_node=True
-    # Since we don't have a secondary index for this yet, we might need one or scan (slow)
-    # For now, let's assume we have a queue of expansion node IDs
-    pass
+    # Since we don't have a secondary index, we'd need to scan or use a queue.
+    # For this prototype, we'll check if there's an expansion_queue in the store.
+    import json
+    data = graph.store._get("expansion_queue")
+    if not data:
+        return
+
+    queue = json.loads(data)
+    if not queue:
+        return
+
+    new_queue = []
+    for node_id in queue:
+        node = graph.store.get_node(node_id)
+        if not node or not node.is_expansion_node:
+            continue
+
+        result_text = await fetcher.fetch(node.label)
+        if result_text:
+            # Simple triple extraction or just create a general edge
+            # For now, let's just create one ASSERTED edge if we find something
+            # In a full version, we'd use extract_triple(result_text)
+            from paragi_io.canonicalize import extract_triple
+            triple = extract_triple(result_text)
+            if triple:
+                s, r, o = triple
+                vector = encoder.encode(result_text)
+                graph.add_edge(s, o, r, vector, source_cluster="external", source_reliability=0.6)
+
+            # Successfully resolved or at least tried
+            # Delete expansion node marker (or just flip flag)
+            node.is_expansion_node = False
+            graph.store.save_node(node)
+        else:
+            # Keep in queue if failed?
+            new_queue.append(node_id)
+
+    graph.store._save("expansion_queue", json.dumps(new_queue))

@@ -16,12 +16,9 @@ async def get_evolution(query_id: str):
     from paragi_io.pipeline import process_query
 
     # Get original record
-    import json
-    data = graph.store._get(f"query_history:{query_id}")
-    if not data:
+    record = graph.store.get_query_record(query_id)
+    if not record:
         return {"error": "Not found"}
-
-    record = json.loads(data)
 
     # Re-run query to see if it evolved
     new_result = process_query(record["raw_text"], graph, encoder, record["user_id"])

@@ -75,7 +75,16 @@ def ingest_conceptnet(graph: ParagiGraph, encoder: ParagiEncoder,
         print(f"  {s} --[{r}]--> {o} (weight: {w})")
 
     count = 0
-    for sub, rel, obj, weight in parse_conceptnet_csv(csv_path): # Restart or chain
+    # Process samples first
+    for sub, rel, obj, weight in samples:
+        sub_c = canonicalize(sub)
+        obj_c = canonicalize(obj)
+        vector = encoder.encode(f"{sub} {rel.lower().replace('_', ' ')} {obj}")
+        graph.add_edge(source_label=sub_c, target_label=obj_c, edge_type=rel, vector=vector, source_cluster="conceptnet", source_reliability=float(min(1.0, weight / 5.0)))
+        count += 1
+
+    # Then continue with the rest of the generator
+    for sub, rel, obj, weight in gen:
         if count >= max_edges:
             break
 

@@ -123,12 +123,23 @@ class RocksDBStore:
             history_list.append(record['id'])
             self.db["history_ids"] = json.dumps(history_list)
 
+    def get_query_record(self, query_id: str) -> Optional[dict]:
+        data = self._get(f"query_history:{query_id}")
+        if data:
+            return json.loads(data)
+        return None
+
     def get_query_history(self, limit: int) -> List[dict]:
         history = self._get("history_ids")
         if not history:
             return []
         history_list = json.loads(history)
-        return [json.loads(self.db[f"query_history:{h_id}"]) for h_id in history_list[-limit:]][::-1]
+        results = []
+        for h_id in history_list[-limit:]:
+            record = self.get_query_record(h_id)
+            if record:
+                results.append(record)
+        return results[::-1]
 
     def save_user_credits(self, user_id: str, credits: int):
         self._save(f"user_credits:{user_id}", str(credits))
