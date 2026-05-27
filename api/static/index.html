@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paragi Graph Intelligence</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Paragi</h1>
+            <div id="health-stats">Nodes: <span id="node-count">-</span> | Edges: <span id="edge-count">-</span></div>
+        </header>
+
+        <main>
+            <div id="chat-container">
+                <div id="messages"></div>
+                <div id="input-area">
+                    <input type="text" id="query-input" placeholder="Ask Paragi something..." autocomplete="off">
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+
+            <div id="graph-container" class="hidden">
+                <div id="graph-header">
+                    <button id="close-graph">Close Graph</button>
+                    <h3 id="graph-title">Graph Exploration</h3>
+                </div>
+                <div id="d3-canvas"></div>
+            </div>
+        </main>
+
+        <aside id="history-sidebar">
+            <h3>Recent Queries</h3>
+            <div id="history-list"></div>
+        </aside>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
