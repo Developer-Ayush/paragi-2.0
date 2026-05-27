@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from storage.rocksdb_store import RocksDBStore
@@ -10,8 +11,6 @@ import config
 
 from api.routes import query, graph_view, history, health
 
-app = FastAPI(title="Paragi", version="1.0.0")
-
 # Global state
 store = None
 bloom = None
@@ -19,8 +18,8 @@ graph = None
 encoder = None
 worker = None
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global store, bloom, graph, encoder, worker
 
     # Initialize components
@@ -37,12 +36,15 @@ async def startup():
     worker = BackgroundWorker(graph, encoder)
     worker.start()
 
-@app.on_event("shutdown")
-async def shutdown():
+    yield
+
+    # Shutdown
     if worker:
         worker.stop()
     if store:
         store.close()
+
+app = FastAPI(title="Paragi", version="1.0.0", lifespan=lifespan)
 
 # Include routes
 app.include_router(query.router)

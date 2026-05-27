@@ -28,7 +28,7 @@ def create_expansion_node(query_label: str, graph: ParagiGraph) -> Node:
         data = graph.store._get("expansion_queue")
         queue = json.loads(data) if data else []
         queue.append(node.id)
-        graph.store.db["expansion_queue"] = json.dumps(queue)
+        graph.store._save("expansion_queue", json.dumps(queue))
 
     return node
 

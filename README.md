@@ -59,61 +59,45 @@ For stable use, run without reload and with multiple workers:
 uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
+## Deployment Guide (Make it Live)
+
+### Free Deployment Options
+
+#### Render (free tier, ephemeral disk)
+- Connect your GitHub repo.
+- **Build Command**: `pip install -r requirements.txt && python -m spacy download en_core_web_sm`
+- **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+- **Environment Variables**: `PYTHONPATH=..`
+- *Note: The free tier sleeps after 15 minutes of inactivity.*
+
+#### Railway (free $5 credit/month, persistent disk)
+- Use a `Procfile` with `web: uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
+- Attach a volume at `/app/data`.
+- **Environment Variables**: `ROCKSDB_PATH=/app/data/paragi_db`.
+- Paragi will automatically detect this via `os.environ`.
+
+#### Fly.io (free allowance, persistent volumes)
+- Use `fly launch`.
+- Add a `[[mounts]]` block in `fly.toml`:
+  ```toml
+  [[mounts]]
+    source = "paragi_data"
+    destination = "/app/data"
+  ```
+- Run `fly volumes create paragi_data --size 3`.
+- Deploy with `fly deploy`.
+
+#### Hugging Face Spaces (free, no persistent disk, demo only)
+- Use a `Dockerfile` exposing port 7860.
+- **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port 7860`.
+
+**Note on Bootstrapping**: For free tier deployments with limited resources or ephemeral disks, it is recommended to use `max_edges=10000` during bootstrap or skip it entirely. Paragi will naturally fill its graph via the expansion node mechanism (DuckDuckGo/Wikipedia) as users ask questions.
+
 ## How to Use
 1. **Ask Questions**: Type natural language questions like "does fire burn?" or "is steam hot?".
 2. **Visualize Paths**: When Paragi finds a path, it shows a "Path Visualization". Click on any node in that path to open the Graph Explorer.
 3. **Graph Explorer**: Use the D3.js visualization to see how nodes are connected. Blue nodes are concepts; Red nodes are "Expansion Nodes" (knowledge gaps being investigated).
 4. **Knowledge Gaps**: If you ask about something Paragi doesn't know, it creates an expansion node. The background worker will eventually resolve this via internet search.
-
-## Deployment Guide (Make it Live)
-
-### 1. Deploying to a VPS (DigitalOcean/AWS/Linode)
-1. **Provision**: Create a Ubuntu 22.04+ instance with at least 4GB RAM.
-2. **Setup**:
-   ```bash
-   sudo apt update && sudo apt install python3-pip git -y
-   git clone <your-fork-url>
-   cd paragi
-   pip install -r requirements.txt
-   python -m spacy download en_core_web_sm
-   ```
-3. **Background Ingestion**: Run the bootstrap process in a `screen` or `tmux` session as it takes time.
-4. **Service**: Create a systemd service file `/etc/systemd/system/paragi.service`:
-   ```ini
-   [Unit]
-   Description=Paragi AI Service
-   After=network.target
-
-   [Service]
-   User=www-data
-   Group=www-data
-   WorkingDirectory=/var/www/paragi
-   Environment="PYTHONPATH=/var/www/paragi"
-   ExecStart=/usr/local/bin/uvicorn api.main:app --host 0.0.0.0 --port 80
-   Restart=always
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-5. **SSL**: Use Nginx as a reverse proxy and `certbot` for HTTPS.
-
-### 2. Docker Deployment
-A `Dockerfile` is provided in the repository (if not, you can create one):
-```dockerfile
-FROM python:3.12-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    python -m spacy download en_core_web_sm
-COPY . .
-EXPOSE 8000
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-Build and run:
-```bash
-docker build -t paragi .
-docker run -p 80:8000 -v ./data:/app/data paragi
-```
 
 ## How to Fork and Customize
 Paragi is designed to be highly modular:

@@ -13,7 +13,7 @@ class RocksDBStore:
         self.path = path
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self.db = Rdict(path, Options())
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def _save(self, key: str, value: Any):
         with self.lock:

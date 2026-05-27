@@ -37,7 +37,14 @@ class BackgroundWorker:
         3. Save bloom filter to disk
         """
         # 1. Resolve expansion nodes
-        asyncio.run(resolve_expansion_nodes(self.graph, self.fetcher, self.encoder))
+        # Use a dedicated event loop to avoid conflict with FastAPI
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(resolve_expansion_nodes(self.graph, self.fetcher, self.encoder))
+            loop.close()
+        except Exception as e:
+            logging.error(f"Expansion node resolution error: {e}")
 
         # 2. Save bloom
         bloom_path = "./data/bloom_filter.bin"

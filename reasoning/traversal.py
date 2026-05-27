@@ -58,8 +58,7 @@ def find_paths(
                 if edge.target_id == target_node.id:
                     completed_paths.append(new_path)
                     if new_path.confidence > config.MIN_CONFIDENCE_EARLY_STOP:
-                         # For simplicity, we'll collect all and return, but early stop could be implemented
-                         pass
+                        return completed_paths
                 else:
                     new_beam.append(new_path)
 

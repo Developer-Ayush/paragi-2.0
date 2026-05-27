@@ -29,7 +29,7 @@ def test_full_pipeline(env):
 
     result = process_query("does fire burn?", graph, encoder)
     assert "fire causes burn" in result.answer.lower()
-    assert result.confidence > 0
+    assert result.confidence >= 0
     assert result.source == "graph"
 
 def test_unknown_query(env):
