@@ -41,7 +41,7 @@ Paragi is a continuously learning graph intelligence system implemented in Pytho
    python scripts/download_conceptnet.py
 
    # Ingest initial edges (capped at 500,000 by default in config)
-   python -m bootstrap.seed
+   python bootstrap/seed.py
    ```
 
 ## Running the System
