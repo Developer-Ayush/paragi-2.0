@@ -20,7 +20,7 @@ Paragi is a continuously learning graph intelligence system implemented in Pytho
 1. **Fork and Clone**
    Fork this repository on GitHub and then clone your fork:
    ```bash
-   git clone https://github.com/your-username/paragi.git
+   git clone https://github.com/Developer-Ayush/paragi-2.0.git
    cd paragi
    ```
 
