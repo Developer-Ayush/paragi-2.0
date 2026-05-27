@@ -6,9 +6,10 @@ router = APIRouter()
 @router.get("/history")
 async def get_history(user_id: str, limit: int = 20):
     from api.main import graph
-    # Filter by user_id in the store if implemented, else just return global for prototype
-    history = graph.store.get_query_history(limit)
-    return [h for h in history if h.get("user_id") == user_id]
+    # Fetch 200 records to filter by user_id
+    history = graph.store.get_query_history(200)
+    filtered = [h for h in history if h.get("user_id") == user_id]
+    return filtered[:limit]
 
 @router.get("/history/{query_id}/evolution")
 async def get_evolution(query_id: str):

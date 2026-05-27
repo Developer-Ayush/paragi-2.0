@@ -48,7 +48,7 @@ DECAY_RATES = {
 BACKGROUND_INTERVAL_SECONDS = 30
 
 # Storage
-ROCKSDB_PATH = "./data/paragi_db"
+ROCKSDB_PATH = os.environ.get("ROCKSDB_PATH", "./data/paragi_db")
 BLOOM_CAPACITY = 10_000_000
 BLOOM_ERROR_RATE = 0.001
 

@@ -31,7 +31,9 @@ async def query_endpoint(request: QueryRequest):
         hops = 0
         if result.paths:
             best_path = result.paths[0]
-            path_labels = [graph.store.get_node(nid).label for nid in best_path.nodes]
+            for nid in best_path.nodes:
+                node = graph.store.get_node(nid)
+                path_labels.append(node.label if node else "unknown")
             hops = best_path.hops
 
         return QueryResponse(

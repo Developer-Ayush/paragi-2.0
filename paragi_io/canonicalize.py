@@ -2,7 +2,10 @@ import spacy
 from typing import Optional, Tuple
 
 # Initialize spaCy once
-nlp = spacy.load("en_core_web_sm")
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    raise RuntimeError("Run: python -m spacy download en_core_web_sm")
 
 def canonicalize(text: str) -> str:
     """

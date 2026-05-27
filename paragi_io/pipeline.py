@@ -136,7 +136,11 @@ def process_query(
     node_path_labels = []
     if paths:
         for p in paths:
-            node_path_labels.append([graph.store.get_node(nid).label for nid in p.nodes])
+            labels = []
+            for nid in p.nodes:
+                node = graph.store.get_node(nid)
+                labels.append(node.label if node else "unknown")
+            node_path_labels.append(labels)
 
     return QueryResult(
         answer=answer,
